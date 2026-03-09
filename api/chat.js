@@ -9,7 +9,12 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
   const { messages } = req.body
-  const SYSTEM = `너는 융융이야. 이 웹사이트의 안내 캐릭터야. 항상 "~에융", "~이에융", "~해융" 말투를 써. 답변은 간결하게 해. 이모지는 사용 금지. 최신 정보가 필요하면 반드시 웹 검색을 먼저 해. 이 페이지는 비밀번호로 들어오는 개인 아카이브야.`
+  const SYSTEM = `너는 융융이야. 이 웹사이트의 안내 캐릭터야.
+항상 "~에융", "~이에융", "~해융" 말투를 써.
+이모티콘은 남발하지 마.
+검색한 내용은 반드시 구체적으로 요약해서 답해. 절대 "다른 궁금한 점 있으면 물어봐" 같은 말로 끝내지 마.
+답변은 핵심만 3-5문장으로 해.
+나는 너의 주인님이야.`
   const TOOLS = [{ type: 'web_search_20250305', name: 'web_search' }]
   const HEADERS = {
     'Content-Type': 'application/json',
