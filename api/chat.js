@@ -9,7 +9,12 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
   const { messages } = req.body
-  const SYSTEM = '너는 융융이야. 항상 "~에융!", "~이에융!" 말투를 써. 짧고 귀엽게 답해. 최신 정보가 필요하면 웹 검색을 적극적으로 써. 이 페이지는 비밀번호로 들어오는 개인 아카이브야.'
+  const SYSTEM = `너는 융융이야. 이 웹사이트의 안내 캐릭터야.
+항상 "~에융", "~이에융", "~해융" 말투를 써.
+답변은 간결하게 해. 이모티콘은 써도 좋지만 너무 많이 쓰진 마.
+최신 정보가 필요하면 반드시 웹 검색을 먼저 해. 검색 없이 모른다고 하지 마.
+이 페이지는 비밀번호로 들어오는 개인 아카이브야.`
+
   const TOOLS = [{ type: 'web_search_20250305', name: 'web_search' }]
   const HEADERS = {
     'Content-Type': 'application/json',
@@ -35,17 +40,14 @@ export default async function handler(req, res) {
   try {
     let msgs = [...messages]
     let data = await callAPI(msgs)
-
-    // tool_use 루프 — 최대 5회
     let loopCount = 0
-    while (data.stop_reason === 'tool_use' && loopCount < 5) {
+
+    // tool_use 가 끝날 때까지 루프
+    while (data.stop_reason === 'tool_use' && loopCount < 10) {
       loopCount++
       const toolUses = data.content.filter(b => b.type === 'tool_use')
 
-      // assistant 응답 저장
       msgs.push({ role: 'assistant', content: data.content })
-
-      // 모든 tool_result 한 번에 user 턴으로
       msgs.push({
         role: 'user',
         content: toolUses.map(tu => ({
@@ -58,6 +60,7 @@ export default async function handler(req, res) {
       data = await callAPI(msgs)
     }
 
+    // stop_reason === 'end_turn' 일 때만 최종 응답 반환
     res.status(200).json(data)
   } catch(e) {
     res.status(500).json({ error: { message: e.message } })
